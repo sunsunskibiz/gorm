@@ -7,18 +7,6 @@ import (
 	"gorm.io/gorm"
 )
 
-type User struct {
-	gorm.Model
-	Name        string
-	CreditCards []CreditCard
-}
-
-type CreditCard struct {
-	gorm.Model
-	Number string
-	UserID uint
-	Images []string
-}
 
 func main() {
 	dsn := "root:@tcp(127.0.0.1:3306)/sun?charset=utf8mb4&parseTime=True&loc=Local"
@@ -27,15 +15,18 @@ func main() {
 		panic("failed to connect database")
 	}
 
-	db.Migrator().DropTable(&User{}, &CreditCard{})
+	// Drop table
+	db.Migrator().DropTable(&User{}, &CreditCard{}, &Image{})
 
 	// Migrate the schema
-	db.AutoMigrate(&User{}, &CreditCard{})
+	db.AutoMigrate(&User{}, &CreditCard{}, &Image{})
 
 	// Create
-	db.Create(&User{Name: "MU"})
-	db.Create(&CreditCard{Number: "111", UserID: 1})
-	db.Create(&CreditCard{Number: "222", UserID: 1})
+	db.Create(&User{Name: "MU", UserID: "1"})
+	db.Create(&CreditCard{Number: "111", UserID: "1", CreditCardID: "1"})
+	db.Create(&CreditCard{Number: "222", UserID: "1", CreditCardID: "2"})
+	db.Create(&Image{Url: "url-one-one", CreditCardID: "1"})
+	db.Create(&Image{Url: "url-one-two", CreditCardID: "1"})
 
 	// Read
 	var user User
@@ -47,10 +38,10 @@ func main() {
 		panic(err)
 	}
 	fmt.Printf("Users: %+v\n", users)
-}
 
-func GetAll(db *gorm.DB) (User, error) {
-    var users User
-    err := db.Model(&User{}).Preload("CreditCards").Find(&users).Error
-    return users, err
+	result, err := GetResult(db)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("Result: %+v\n", result)
 }
