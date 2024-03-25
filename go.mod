@@ -5,6 +5,7 @@ go 1.21.7
 require (
 	gorm.io/driver/mysql v1.5.4
 	gorm.io/gorm v1.25.7
+	gorm.io/plugin/optimisticlock v1.1.1
 )
 
 require (

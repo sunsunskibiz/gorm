@@ -1,24 +1,26 @@
 package main
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/plugin/optimisticlock"
+)
 
 type User struct {
-	gorm.Model
-	UserID      string
+	ID          string `gorm:"column:id;type:varbinary(30);primaryKey"`
 	Name        string
-	CreditCards []CreditCard
+	CreditCards []CreditCard `gorm:"foreignKey:UserID"`
+	Version     optimisticlock.Version
 }
 
 type CreditCard struct {
-	gorm.Model
-	CreditCardID string
-	Number       string
-	UserID       string
-	Images       []Image
+	ID      string `gorm:"column:id;type:varbinary(30);primaryKey"`
+	Number  string
+	UserID  string
+	Images  []Image 
+	Version optimisticlock.Version
 }
 
 type Image struct {
-	gorm.Model
+	ID           string `gorm:"column:id;type:varbinary(30);primaryKey"`
 	Url          string
 	CreditCardID string
 }

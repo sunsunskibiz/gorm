@@ -9,9 +9,9 @@ func GetAll(db *gorm.DB) (User, error) {
 }
 
 type Result struct {
-	UserID      string
+	ID      string
 	Name        string
-	CreditCards []CreditCard `gorm:"foreignKey:UserID;references:UserID"`
+	CreditCards []CreditCard `gorm:"foreignKey:UserID"`
 }
 
 func GetResult(db *gorm.DB) (Result, error) {
