@@ -1,22 +1,25 @@
 package main
 
-import "gorm.io/gorm"
+import (
+	"github.com/sunsunskibiz/gorm/model"
+	"gorm.io/gorm"
+)
 
-func GetAll(db *gorm.DB) (User, error) {
-	var users User
-	err := db.Model(&User{}).Preload("CreditCards.Images").Find(&users).Error
+func GetAll(db *gorm.DB) (model.User, error) {
+	var users model.User
+	err := db.Model(&model.User{}).Preload("CreditCards.Images").Find(&users).Error
 	return users, err
 }
 
 type Result struct {
-	ID      string
+	ID          string
 	Name        string
-	CreditCards []CreditCard `gorm:"foreignKey:UserID"`
+	CreditCards []model.CreditCard `gorm:"foreignKey:UserID"`
 }
 
 func GetResult(db *gorm.DB) (Result, error) {
 	var r Result
-	err := db.Model(&User{}).
+	err := db.Model(&model.User{}).
 		Preload("CreditCards.Images").
 		Find(&r).
 		Where("name = ?", "MU").

@@ -5,6 +5,15 @@ import (
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"github.com/sunsunskibiz/gorm/model"
+)
+
+var (
+	one = "1"
+	two = "2"
+	three = "3"
+	four = "4"
+	five = "5"
 )
 
 func main() {
@@ -15,20 +24,20 @@ func main() {
 	}
 
 	// Drop table
-	db.Migrator().DropTable(&User{}, &CreditCard{}, &Image{})
+	db.Migrator().DropTable(&model.User{}, &model.CreditCard{}, &model.Image{})
 
 	// Migrate the schema
-	db.AutoMigrate(&User{}, &CreditCard{}, &Image{})
+	db.AutoMigrate(&model.User{}, &model.CreditCard{}, &model.Image{})
 
 	// Create
-	db.Create(&User{Name: "MU", ID: "1"})
-	db.Create(&CreditCard{Number: "111", UserID: "1", ID: "1"})
-	db.Create(&CreditCard{Number: "222", UserID: "1", ID: "2"})
-	db.Create(&Image{Url: "url-one-one", CreditCardID: "1", ID: "1"})
-	db.Create(&Image{Url: "url-one-two", CreditCardID: "1", ID: "2"})
+	db.Create(&model.User{Name: "MU", ID: &one})
+	db.Create(&model.CreditCard{Number: "111", UserID: &one, ID: &one})
+	db.Create(&model.CreditCard{Number: "222", UserID: &one, ID: &two})
+	db.Create(&model.Image{Url: "url-one-one", CreditCardID: "1", ID: "1"})
+	db.Create(&model.Image{Url: "url-one-two", CreditCardID: "1", ID: "2"})
 
 	// Read
-	var user User
+	var user model.User
 	db.First(&user, 1)
 	fmt.Printf("User: %+v\n", user)
 
@@ -45,29 +54,35 @@ func main() {
 	fmt.Printf("Result: %+v\n", result)
 
 	// Update
-	var userWithAsso User
+	var userWithAsso model.User
 	db.Preload("CreditCards.Images").First(&userWithAsso, 1)
 	fmt.Printf("userWithAsso before update: %+v\n", userWithAsso)
 
 	userWithAsso.Name = "pikachu"
-	userWithAsso.CreditCards = append(userWithAsso.CreditCards, CreditCard{Number: "333", UserID: "1", ID: "3"})
+	userWithAsso.CreditCards = append(userWithAsso.CreditCards, model.CreditCard{Number: "333", UserID: &one, ID: &three})
 	db.Updates(&userWithAsso)
 
 	db.Preload("CreditCards.Images").First(&userWithAsso, 1)
 	fmt.Printf("userWithAsso after update: %+v\n", userWithAsso)
 
 	// Update user with partial field (just name)
-	updateUser := User{
-		ID: "1",
+	updateUser := model.User{
+		ID: &one,
 		Name: "charmander",
-		CreditCards: []CreditCard{{Number: "444", UserID: "1", ID: "4"}},
+		CreditCards: []model.CreditCard{{Number: "444", UserID: &one, ID: &four}},
 	}
 	fmt.Printf("updateUser before update: %+v\n", updateUser)
 	
-	db.Updates(&updateUser)
-
-	// TODO: Remove assoc CreditCards before update
+	
+	db.Debug().Omit("CreditCards").Updates(&updateUser)
 
 	db.Preload("CreditCards.Images").First(&updateUser, 1)
 	fmt.Printf("updateUser after update: %+v\n", updateUser)
+
+
+	db.Debug().Model(&updateUser).Association("CreditCards").Replace([]model.CreditCard{{Number: "555", UserID: &one, ID: &five}})
+
+	db.Preload("CreditCards.Images").First(&updateUser, 1)
+	fmt.Printf("updateUser after update replace creditcards: %+v\n", updateUser)
+
 }
